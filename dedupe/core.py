@@ -363,6 +363,14 @@ class frozendict(collections.Mapping):
         try:
             return self._cached_hash
         except AttributeError:
+            # Temporary workaround for hashing unhashable values
+            # TODO Probably needs recursive design
+            for key, item in self._d.items():
+                if isinstance(item, list):
+                    try:
+                        self._d[key] = tuple([tuple(frozenset(x.items())) for x in item])
+                    except Exception as e:
+                        self._d[key] = tuple([x for x in item])
             h = self._cached_hash = hash(frozenset(viewitems(self._d)))
             return h
 
